@@ -1,0 +1,10 @@
+node_modules/
+
+# Build output
+example/dist/
+
+# Environment variables
+example/.env.local
+
+# GAS
+example/.clasp.json

@@ -1,0 +1,51 @@
+{
+	"name": "vite-plugin-gas-hoist",
+	"version": "0.1.0",
+	"description": "A Vite plugin that hoists entry point exports to the global scope for Google Apps Script",
+	"keywords": [
+		"vite-plugin",
+		"vite",
+		"google-apps-script",
+		"gas",
+		"clasp"
+	],
+	"license": "MIT",
+	"author": "Taiki Watanabe",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/hd140283/vite-plugin-gas-hoist.git"
+	},
+	"type": "module",
+	"main": "./src/index.js",
+	"exports": {
+		".": "./src/index.js"
+	},
+	"files": [
+		"src"
+	],
+	"scripts": {
+		"lint": "biome check --write",
+		"lint:ci": "biome check",
+		"example:dev": "cd example && vite build --mode development",
+		"example:build": "cd example && vite build",
+		"example:login": "pnpx @google/clasp@2.5 login",
+		"example:push": "cd example && pnpx @google/clasp@2.5 push"
+	},
+	"peerDependencies": {
+		"vite": "^8.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.6",
+		"vite": "^8.0.3",
+		"vite-plugin-static-copy": "^3.1.4"
+	},
+	"volta": {
+		"node": "22.21.1",
+		"pnpm": "10.23.0"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild"
+		]
+	}
+}
