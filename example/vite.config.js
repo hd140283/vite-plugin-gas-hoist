@@ -10,15 +10,17 @@
 
 import { writeFile } from 'node:fs/promises';
 import { defineConfig, loadEnv } from 'vite';
+import { vitePluginGasHoist } from 'vite-plugin-gas-hoist';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import { vitePluginGasHoist } from '../src/index.js';
 
 export default defineConfig(async ({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), 'VITE_');
 	const minify = mode === 'production';
 
-	// Generate .clasp.json dynamically from environment variables
-	await writeFile('.clasp.json', JSON.stringify({ scriptId: env.VITE_SCRIPT_ID, rootDir: 'dist' }));
+	// Generate .clasp.json dynamically from environment variables (skip if not set)
+	if (env.VITE_SCRIPT_ID) {
+		await writeFile('.clasp.json', JSON.stringify({ scriptId: env.VITE_SCRIPT_ID, rootDir: 'dist' }));
+	}
 
 	return {
 		plugins: [

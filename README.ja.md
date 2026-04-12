@@ -1,12 +1,21 @@
 # vite-plugin-gas-hoist
 
+[![npm version](https://img.shields.io/npm/v/vite-plugin-gas-hoist)](https://www.npmjs.com/package/vite-plugin-gas-hoist)
+[![Vite compatibility](https://registry.vite.dev/api/badges?package=vite-plugin-gas-hoist&tool=vite)](https://registry.vite.dev)
+
 [English](README.md)
 
-エントリーポイントの `export` を Google Apps Script (GAS) のグローバルスコープに公開する Vite プラグイン。
+エントリーポイントの `export` を Google Apps Script (GAS) のグローバルスコープに公開する Vite プラグインです。
 
-## なぜ必要？
+## 試してみる
 
-GAS はグローバルスコープの関数しか実行できないが、Vite でバンドルすると全てのコードが IIFE 内に閉じ込められる。このプラグインは、エントリーポイントの `export` を自動的にグローバル関数としてラップすることで、この問題を解決する。
+ブラウザ上でコードの編集とビルドを試すことができます。
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/hd140283/vite-plugin-gas-hoist/tree/main/example?file=src/app.js)
+
+## なぜ必要か？
+
+GAS はグローバルスコープの関数しか実行できないが、Vite でバンドルすると全てのコードが IIFE 内に閉じ込められます。このプラグインは、エントリーポイントの `export` を自動的にグローバル関数としてラップすることで、この問題を解決します。
 
 ```js
 // ビルド前（エントリーポイント）
@@ -42,7 +51,7 @@ export default defineConfig({
 });
 ```
 
-`build.lib.name` に指定した変数名（上記例では `lib_`）を介して、エクスポートされた関数がグローバルスコープに公開される。
+`build.lib.name` に指定した変数名（上記例では `lib_`）を介して、エクスポートされた関数がグローバルスコープに公開されます。
 
 ## 動作条件
 

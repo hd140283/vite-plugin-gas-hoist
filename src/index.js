@@ -25,10 +25,11 @@ export const vitePluginGasHoist = () => {
 
 	return {
 		name: 'vite-plugin-gas-hoist',
+		apply: 'build',
 
 		/** @param {import('vite').ResolvedConfig} config */
 		configResolved(config) {
-			varName = config.build.lib.name;
+			varName = config.build.lib?.name;
 		},
 
 		renderChunk: {
@@ -55,7 +56,10 @@ export const vitePluginGasHoist = () => {
 					.map((name) => `function ${name}(...args){return ${varName}.${name}(...args)}`)
 					.join('\n');
 
-				console.log(`vite-plugin-gas-hoist: hoisted ${exports.length} function(s)`);
+				const label = exports.length === 1 ? 'function' : 'functions';
+				const list = exports.map((name) => `  - ${name}`).join('\n');
+				console.log(`[vite-plugin-gas-hoist] Hoisted ${exports.length} ${label} to global scope:\n${list}`);
+
 				return `${code}\n${wrappers}\n`;
 			},
 		},

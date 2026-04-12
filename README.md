@@ -1,8 +1,17 @@
 # vite-plugin-gas-hoist
 
+[![npm version](https://img.shields.io/npm/v/vite-plugin-gas-hoist)](https://www.npmjs.com/package/vite-plugin-gas-hoist)
+[![Vite compatibility](https://registry.vite.dev/api/badges?package=vite-plugin-gas-hoist&tool=vite)](https://registry.vite.dev)
+
 [日本語](README.ja.md)
 
 A Vite plugin that hoists entry point `export`s to the global scope for Google Apps Script (GAS).
+
+## Try it
+
+Edit and build in your browser — no setup required.
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/hd140283/vite-plugin-gas-hoist/tree/main/example?file=src/app.js)
 
 ## Why?
 
