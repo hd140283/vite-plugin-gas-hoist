@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-gas-hoist",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "A Vite plugin that hoists entry point exports to the global scope for Google Apps Script",
 	"keywords": [
 		"vite-plugin",
