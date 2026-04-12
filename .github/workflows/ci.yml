@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm lint:ci
+      - run: pnpm test
+
+  integration:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vite-version: [5, 6, 7, 8]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build example with Vite ${{ matrix.vite-version }}
+        working-directory: example
+        run: |
+          npm install
+          npm install file:.. vite@${{ matrix.vite-version }} --save-dev
+          npm run dev
+      - name: Verify hoisted output
+        working-directory: example
+        run: grep "function sayHello" dist/app.js
