@@ -9,7 +9,7 @@
 
 ## 試してみる
 
-ブラウザ上でコードの編集とビルドを試すことができます。
+ブラウザ上でコードの編集とビルドを試すことができます。ビルド完了後、`dist/app.js` を開くとプラグインの出力を確認できます。
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/hd140283/vite-plugin-gas-hoist/tree/main/example?file=src/app.js)
 

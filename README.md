@@ -9,7 +9,7 @@ A Vite plugin that hoists entry point `export`s to the global scope for Google A
 
 ## Try it
 
-Edit and build in your browser — no setup required.
+Edit and build in your browser — no setup required. Once the build finishes, open `dist/app.js` to see the hoisted output.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/hd140283/vite-plugin-gas-hoist/tree/main/example?file=src/app.js)
 
