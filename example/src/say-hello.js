@@ -1,15 +1,15 @@
-import { DEFAULT_LANG } from './default-lang.js';
 import { formatGreeting } from './format-greeting.js';
 
 /**
  * Greets a single person.
  *
- * Declared as `export function` so the plugin emits a `function` wrapper,
- * which keeps it public to GAS library callers.
+ * Declared with `export function` so the plugin emits a top-level
+ * `function` declaration at GAS global scope, which keeps it public to
+ * library callers.
  *
  * @param {string} name
  * @returns {string}
  */
 export function sayHello(name) {
-	return formatGreeting(name, DEFAULT_LANG);
+	return formatGreeting(name);
 }
