@@ -51,6 +51,7 @@ export const vitePluginGasHoist = () => {
 			try {
 				ast = this.parse(code);
 			} catch {
+				// Parse errors are surfaced by Vite/Rollup elsewhere; staying silent here avoids double-reporting.
 				return null;
 			}
 

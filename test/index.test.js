@@ -273,5 +273,10 @@ describe('vitePluginGasHoist', () => {
 			expect(spyLog).toHaveBeenCalledWith(expect.stringContaining('Skipped 1 export'));
 			spyLog.mockRestore();
 		});
+
+		it('does not throw on unparsable input', () => {
+			const { transform } = createReadyPlugin();
+			expect(() => transform('this is not (valid) javascript ===')).not.toThrow();
+		});
 	});
 });
