@@ -1,16 +1,15 @@
-import { greet } from './greet.js';
+import { DEFAULT_LANG } from './default-lang.js';
+import { formatGreeting } from './format-greeting.js';
 
 /**
- * Greets someone by name.
- * Exported from the entry point, so it WILL be hoisted to the global scope.
+ * Greets a single person.
  *
- * Declared as `function` (not `const`) so the plugin emits a `function`
- * wrapper, which stays public to GAS library callers. `export const` would
- * be hoisted as `const`, which GAS treats as private.
+ * Declared as `export function` so the plugin emits a `function` wrapper,
+ * which keeps it public to GAS library callers.
  *
  * @param {string} name
  * @returns {string}
  */
 export function sayHello(name) {
-	return greet(name);
+	return formatGreeting(name, DEFAULT_LANG);
 }
