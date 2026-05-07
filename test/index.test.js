@@ -56,6 +56,12 @@ describe('vitePluginGasHoist', () => {
 		expect(plugin.apply).toBe('build');
 	});
 
+	it('clears the kind map on buildStart between runs', () => {
+		const { plugin } = createReadyPlugin();
+		expect(() => plugin.buildStart.call({})).not.toThrow();
+		expect(() => plugin.buildStart.call({})).not.toThrow();
+	});
+
 	it('handles missing build.lib gracefully', () => {
 		const plugin = vitePluginGasHoist();
 		expect(() => plugin.configResolved({ build: {} })).not.toThrow();

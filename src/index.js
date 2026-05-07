@@ -23,6 +23,9 @@ export const vitePluginGasHoist = () => {
 	/** @type {string} IIFE variable name from build.lib.name */
 	let varName;
 
+	/** @type {Map<string, 'function' | 'const' | 'let' | 'var'>} */
+	const exportKinds = new Map();
+
 	return {
 		name: 'vite-plugin-gas-hoist',
 		apply: 'build',
@@ -30,6 +33,10 @@ export const vitePluginGasHoist = () => {
 		/** @param {import('vite').ResolvedConfig} config */
 		configResolved(config) {
 			varName = config.build.lib?.name;
+		},
+
+		buildStart() {
+			exportKinds.clear();
 		},
 
 		renderChunk: {
