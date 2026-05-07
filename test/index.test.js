@@ -200,14 +200,14 @@ describe('vitePluginGasHoist', () => {
 
 		it('records export { foo as bar } under the renamed name', () => {
 			const { plugin, transform } = createReadyPlugin();
-			transform('function foo() {} export { foo as bar };');
+			transform('const foo = 1; export { foo as bar };');
 			const result = plugin.renderChunk.handler.call(
 				{ warn: vi.fn() },
 				'',
 				makeChunk({ exports: ['bar'] }),
 				iifeOptions,
 			);
-			expect(result).toContain('function bar(...args){return lib_.bar(...args)}');
+			expect(result).toContain('const bar = lib_.bar');
 		});
 	});
 });
