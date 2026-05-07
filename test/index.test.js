@@ -1,5 +1,8 @@
+import * as acorn from 'acorn';
 import { describe, expect, it, vi } from 'vitest';
 import { vitePluginGasHoist } from '../src/index.js';
+
+const parseAst = (code) => acorn.parse(code, { ecmaVersion: 'latest', sourceType: 'module' });
 
 /**
  * Creates a plugin instance with configResolved already called.
@@ -25,6 +28,22 @@ const iifeOptions = /** @type {import('rollup').NormalizedOutputOptions} */ ({
 const esOptions = /** @type {import('rollup').NormalizedOutputOptions} */ ({
 	format: 'es',
 });
+
+/**
+ * Creates a plugin instance, runs configResolved + buildStart, and
+ * returns helpers that mirror Rollup's plugin context.
+ */
+const createReadyPlugin = (varName = 'lib_') => {
+	const plugin = vitePluginGasHoist();
+	plugin.configResolved({ build: { lib: { name: varName } } });
+	plugin.buildStart.call({});
+
+	const ctx = { parse: parseAst, warn: vi.fn() };
+	const transform = (code, id = 'src/main.js') => plugin.transform.call(ctx, code, id);
+	const render = (code, chunk, options = iifeOptions) => plugin.renderChunk.handler.call(ctx, code, chunk, options);
+
+	return { plugin, ctx, transform, render };
+};
 
 describe('vitePluginGasHoist', () => {
 	it('has the correct plugin name', () => {

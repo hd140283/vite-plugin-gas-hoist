@@ -11,6 +11,9 @@ importers:
       '@biomejs/biome':
         specifier: ^2.3.6
         version: 2.4.9
+      acorn:
+        specifier: ^8.16.0
+        version: 8.16.0
       vite:
         specifier: ^8.0.3
         version: 8.0.3(esbuild@0.27.4)(terser@5.46.1)
@@ -952,8 +955,7 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  acorn@8.16.0:
-    optional: true
+  acorn@8.16.0: {}
 
   assertion-error@2.0.1: {}
 
