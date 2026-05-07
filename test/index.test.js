@@ -149,5 +149,29 @@ describe('vitePluginGasHoist', () => {
 			const result = plugin.renderChunk.handler.call({ warn: vi.fn() }, '', chunk, iifeOptions);
 			expect(result).toContain('const FOO = lib_.FOO');
 		});
+
+		it('records export let as let', () => {
+			const { plugin, transform } = createReadyPlugin();
+			transform('export let counter = 0;');
+			const result = plugin.renderChunk.handler.call(
+				{ warn: vi.fn() },
+				'',
+				makeChunk({ exports: ['counter'] }),
+				iifeOptions,
+			);
+			expect(result).toContain('let counter = lib_.counter');
+		});
+
+		it('records export var as var', () => {
+			const { plugin, transform } = createReadyPlugin();
+			transform('export var legacy = "x";');
+			const result = plugin.renderChunk.handler.call(
+				{ warn: vi.fn() },
+				'',
+				makeChunk({ exports: ['legacy'] }),
+				iifeOptions,
+			);
+			expect(result).toContain('var legacy = lib_.legacy');
+		});
 	});
 });
