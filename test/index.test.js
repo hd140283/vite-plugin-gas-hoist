@@ -245,5 +245,18 @@ describe('vitePluginGasHoist', () => {
 			);
 			expect(result).toContain('const bar = lib_.bar');
 		});
+
+		it('handles multiple declarators in one export const', () => {
+			const { plugin, transform } = createReadyPlugin();
+			transform('export const a = 1, b = 2;');
+			const result = plugin.renderChunk.handler.call(
+				{ warn: vi.fn() },
+				'',
+				makeChunk({ exports: ['a', 'b'] }),
+				iifeOptions,
+			);
+			expect(result).toContain('const a = lib_.a');
+			expect(result).toContain('const b = lib_.b');
+		});
 	});
 });
