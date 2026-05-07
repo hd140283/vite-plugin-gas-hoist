@@ -19,11 +19,12 @@
  *
  * @returns {import('vite').Plugin}
  */
+/** @typedef {'function' | 'const' | 'let' | 'var'} ExportKind */
 export const vitePluginGasHoist = () => {
 	/** @type {string} IIFE variable name from build.lib.name */
 	let varName;
 
-	/** @type {Map<string, 'function' | 'const' | 'let' | 'var'>} */
+	/** @type {Map<string, ExportKind>} */
 	const exportKinds = new Map();
 
 	return {
@@ -47,6 +48,9 @@ export const vitePluginGasHoist = () => {
 		 * @param {string} _id
 		 */
 		transform(code, _id) {
+			// Cheap pre-filter: skip modules that obviously have no exports (node_modules, virtual modules, CSS-as-JS, etc.) before paying acorn's cost.
+			if (!code.includes('export')) return null;
+
 			let ast;
 			try {
 				ast = this.parse(code);
@@ -55,7 +59,7 @@ export const vitePluginGasHoist = () => {
 				return null;
 			}
 
-			/** @type {Map<string, 'function' | 'const' | 'let' | 'var'>} */
+			/** @type {Map<string, ExportKind>} */
 			const localKinds = new Map();
 			for (const node of ast.body) {
 				if (node.type === 'FunctionDeclaration' && node.id) {
@@ -110,31 +114,19 @@ export const vitePluginGasHoist = () => {
 			handler(code, chunk, options) {
 				if (options.format !== 'iife' || !chunk.isEntry) return null;
 
-				const { exports } = chunk;
-				if (exports.length === 0) return null;
-
-				/** @type {Array<{ name: string, kind: 'function' | 'const' | 'let' | 'var' }>} */
+				/** @type {Array<{ name: string, kind: ExportKind }>} */
 				const known = [];
 				/** @type {string[]} */
 				const skipped = [];
 
-				for (const name of exports) {
+				for (const name of chunk.exports) {
 					const kind = exportKinds.get(name);
-					if (!kind) {
+					if (kind) {
+						known.push({ name, kind });
+					} else {
 						skipped.push(name);
-						continue;
 					}
-					known.push({ name, kind });
 				}
-
-				const wrappers = known
-					.map(({ name, kind }) => {
-						if (kind === 'function') {
-							return `function ${name}(...args){return ${varName}.${name}(...args)}`;
-						}
-						return `${kind} ${name} = ${varName}.${name}`;
-					})
-					.join('\n');
 
 				if (known.length > 0) {
 					const label = known.length === 1 ? 'export' : 'exports';
@@ -145,10 +137,20 @@ export const vitePluginGasHoist = () => {
 				if (skipped.length > 0) {
 					const label = skipped.length === 1 ? 'export' : 'exports';
 					const list = skipped.map((name) => `  - ${name}`).join('\n');
-					console.log(`[vite-plugin-gas-hoist] Skipped ${skipped.length} ${label} (unsupported pattern):\n${list}`);
+					this.warn(`Skipped ${skipped.length} ${label} (unsupported pattern):\n${list}`);
 				}
 
 				if (known.length === 0) return null;
+
+				const wrappers = known
+					.map(({ name, kind }) => {
+						if (kind === 'function') {
+							return `function ${name}(...args){return ${varName}.${name}(...args)}`;
+						}
+						return `${kind} ${name} = ${varName}.${name}`;
+					})
+					.join('\n');
+
 				return `${code}\n${wrappers}\n`;
 			},
 		},
