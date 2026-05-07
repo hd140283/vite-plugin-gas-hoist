@@ -98,12 +98,9 @@ export const vitePluginGasHoist = () => {
 		renderChunk: {
 			order: 'post',
 			/**
-			 * Appends global wrapper functions for each export.
-			 *
-			 * Given `export { sayHello }` with `lib.name = 'lib_'`, produces:
-			 * ```js
-			 * function sayHello(...args){return lib_.sayHello(...args)}
-			 * ```
+			 * Appends kind-appropriate global hoist bindings for each entry export,
+			 * skipping unsupported patterns (e.g. `export default`, `export class`,
+			 * re-exports) whose declaration kind was not recorded by `transform`.
 			 *
 			 * @param {string} code
 			 * @param {import('rollup').RenderedChunk} chunk
@@ -115,20 +112,42 @@ export const vitePluginGasHoist = () => {
 				const { exports } = chunk;
 				if (exports.length === 0) return null;
 
-				const wrappers = exports
-					.map((name) => {
-						const kind = exportKinds.get(name);
-						if (kind === 'const' || kind === 'let' || kind === 'var') {
-							return `${kind} ${name} = ${varName}.${name}`;
+				/** @type {Array<{ name: string, kind: 'function' | 'const' | 'let' | 'var' }>} */
+				const known = [];
+				/** @type {string[]} */
+				const skipped = [];
+
+				for (const name of exports) {
+					const kind = exportKinds.get(name);
+					if (!kind) {
+						skipped.push(name);
+						continue;
+					}
+					known.push({ name, kind });
+				}
+
+				const wrappers = known
+					.map(({ name, kind }) => {
+						if (kind === 'function') {
+							return `function ${name}(...args){return ${varName}.${name}(...args)}`;
 						}
-						return `function ${name}(...args){return ${varName}.${name}(...args)}`;
+						return `${kind} ${name} = ${varName}.${name}`;
 					})
 					.join('\n');
 
-				const label = exports.length === 1 ? 'function' : 'functions';
-				const list = exports.map((name) => `  - ${name}`).join('\n');
-				console.log(`[vite-plugin-gas-hoist] Hoisted ${exports.length} ${label} to global scope:\n${list}`);
+				if (known.length > 0) {
+					const label = known.length === 1 ? 'export' : 'exports';
+					const list = known.map(({ name, kind }) => `  - ${name} (${kind})`).join('\n');
+					console.log(`[vite-plugin-gas-hoist] Hoisted ${known.length} ${label} to global scope:\n${list}`);
+				}
 
+				if (skipped.length > 0) {
+					const label = skipped.length === 1 ? 'export' : 'exports';
+					const list = skipped.map((name) => `  - ${name}`).join('\n');
+					console.log(`[vite-plugin-gas-hoist] Skipped ${skipped.length} ${label} (unsupported pattern):\n${list}`);
+				}
+
+				if (known.length === 0) return null;
 				return `${code}\n${wrappers}\n`;
 			},
 		},
