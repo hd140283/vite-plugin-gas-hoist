@@ -53,8 +53,24 @@ export const vitePluginGasHoist = () => {
 			} catch {
 				return null;
 			}
+
+			/** @type {Map<string, 'function' | 'const' | 'let' | 'var'>} */
+			const localKinds = new Map();
+			for (const node of ast.body) {
+				if (node.type === 'FunctionDeclaration' && node.id) {
+					localKinds.set(node.id.name, 'function');
+				} else if (node.type === 'VariableDeclaration') {
+					for (const decl of node.declarations) {
+						if (decl.id.type === 'Identifier') {
+							localKinds.set(decl.id.name, node.kind);
+						}
+					}
+				}
+			}
+
 			for (const node of ast.body) {
 				if (node.type !== 'ExportNamedDeclaration') continue;
+
 				if (node.declaration?.type === 'VariableDeclaration') {
 					const kind = node.declaration.kind;
 					for (const decl of node.declaration.declarations) {
@@ -65,6 +81,14 @@ export const vitePluginGasHoist = () => {
 				} else if (node.declaration?.type === 'FunctionDeclaration') {
 					if (node.declaration.id?.type === 'Identifier') {
 						exportKinds.set(node.declaration.id.name, 'function');
+					}
+				} else if (node.specifiers.length > 0 && !node.source) {
+					for (const spec of node.specifiers) {
+						if (spec.type !== 'ExportSpecifier') continue;
+						const kind = localKinds.get(spec.local.name);
+						if (kind) {
+							exportKinds.set(spec.exported.name, kind);
+						}
 					}
 				}
 			}

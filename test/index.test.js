@@ -185,5 +185,29 @@ describe('vitePluginGasHoist', () => {
 			);
 			expect(result).toContain('function greet(...args){return lib_.greet(...args)}');
 		});
+
+		it('records export { foo } using local declaration kind', () => {
+			const { plugin, transform } = createReadyPlugin();
+			transform('const helper = () => 1; export { helper };');
+			const result = plugin.renderChunk.handler.call(
+				{ warn: vi.fn() },
+				'',
+				makeChunk({ exports: ['helper'] }),
+				iifeOptions,
+			);
+			expect(result).toContain('const helper = lib_.helper');
+		});
+
+		it('records export { foo as bar } under the renamed name', () => {
+			const { plugin, transform } = createReadyPlugin();
+			transform('function foo() {} export { foo as bar };');
+			const result = plugin.renderChunk.handler.call(
+				{ warn: vi.fn() },
+				'',
+				makeChunk({ exports: ['bar'] }),
+				iifeOptions,
+			);
+			expect(result).toContain('function bar(...args){return lib_.bar(...args)}');
+		});
 	});
 });
