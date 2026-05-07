@@ -207,7 +207,27 @@ describe('vitePluginGasHoist', () => {
 			expect(result).not.toContain('function b');
 		});
 
-		it('treats re-export from another module as unsupported', () => {
+		it('honors kind when an entry re-exports an imported name as a specifier', () => {
+			const { transform, render } = createReadyPlugin();
+			// Source module declares the function and registers its kind.
+			transform('export function helper() { return 1; }', '/m.js');
+			// Entry module re-exports via import + specifier (no source).
+			transform('import { helper } from "./m.js"; export { helper };', '/entry.js');
+			const result = render('', makeChunk({ exports: ['helper'] }));
+
+			expect(result).toContain('function helper(...args){return lib_.helper(...args)}');
+		});
+
+		it('honors kind when an entry uses a from-clause re-export', () => {
+			const { transform, render } = createReadyPlugin();
+			transform('export const HELPER = 42;', '/m.js');
+			transform('export { HELPER } from "./m.js";', '/entry.js');
+			const result = render('', makeChunk({ exports: ['HELPER'] }));
+
+			expect(result).toContain('const HELPER = lib_.HELPER');
+		});
+
+		it('skips an export name that no transformed module declared', () => {
 			const { transform, render, ctx } = createReadyPlugin();
 			transform('export { something } from "./other.js";');
 			const result = render('', makeChunk({ exports: ['something'] }));
