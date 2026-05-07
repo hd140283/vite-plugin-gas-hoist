@@ -39,6 +39,34 @@ export const vitePluginGasHoist = () => {
 			exportKinds.clear();
 		},
 
+		/**
+		 * Records the declaration kind of each top-level named export so that
+		 * renderChunk can emit a binding that preserves the original visibility.
+		 *
+		 * @param {string} code
+		 * @param {string} _id
+		 */
+		transform(code, _id) {
+			let ast;
+			try {
+				ast = this.parse(code);
+			} catch {
+				return null;
+			}
+			for (const node of ast.body) {
+				if (node.type !== 'ExportNamedDeclaration') continue;
+				if (node.declaration?.type === 'VariableDeclaration') {
+					const kind = node.declaration.kind;
+					for (const decl of node.declaration.declarations) {
+						if (decl.id.type === 'Identifier') {
+							exportKinds.set(decl.id.name, kind);
+						}
+					}
+				}
+			}
+			return null;
+		},
+
 		renderChunk: {
 			order: 'post',
 			/**
@@ -60,7 +88,13 @@ export const vitePluginGasHoist = () => {
 				if (exports.length === 0) return null;
 
 				const wrappers = exports
-					.map((name) => `function ${name}(...args){return ${varName}.${name}(...args)}`)
+					.map((name) => {
+						const kind = exportKinds.get(name);
+						if (kind === 'const' || kind === 'let' || kind === 'var') {
+							return `${kind} ${name} = ${varName}.${name}`;
+						}
+						return `function ${name}(...args){return ${varName}.${name}(...args)}`;
+					})
 					.join('\n');
 
 				const label = exports.length === 1 ? 'function' : 'functions';

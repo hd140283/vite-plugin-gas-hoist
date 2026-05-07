@@ -140,4 +140,14 @@ describe('vitePluginGasHoist', () => {
 			spy.mockRestore();
 		});
 	});
+
+	describe('transform', () => {
+		it('records export const as const', () => {
+			const { plugin, transform } = createReadyPlugin();
+			transform('export const FOO = 42;');
+			const chunk = makeChunk({ exports: ['FOO'] });
+			const result = plugin.renderChunk.handler.call({ warn: vi.fn() }, '', chunk, iifeOptions);
+			expect(result).toContain('const FOO = lib_.FOO');
+		});
+	});
 });
