@@ -258,5 +258,20 @@ describe('vitePluginGasHoist', () => {
 			expect(result).toContain('const a = lib_.a');
 			expect(result).toContain('const b = lib_.b');
 		});
+
+		it('treats re-export from another module as unsupported', () => {
+			const spyLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+			const { plugin, transform } = createReadyPlugin();
+			transform('export { something } from "./other.js";');
+			const result = plugin.renderChunk.handler.call(
+				{ warn: vi.fn() },
+				'',
+				makeChunk({ exports: ['something'] }),
+				iifeOptions,
+			);
+			expect(result).toBeNull();
+			expect(spyLog).toHaveBeenCalledWith(expect.stringContaining('Skipped 1 export'));
+			spyLog.mockRestore();
+		});
 	});
 });
