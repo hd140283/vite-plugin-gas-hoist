@@ -173,5 +173,17 @@ describe('vitePluginGasHoist', () => {
 			);
 			expect(result).toContain('var legacy = lib_.legacy');
 		});
+
+		it('records export function as function', () => {
+			const { plugin, transform } = createReadyPlugin();
+			transform('export function greet(name) { return name; }');
+			const result = plugin.renderChunk.handler.call(
+				{ warn: vi.fn() },
+				'',
+				makeChunk({ exports: ['greet'] }),
+				iifeOptions,
+			);
+			expect(result).toContain('function greet(...args){return lib_.greet(...args)}');
+		});
 	});
 });

@@ -62,6 +62,10 @@ export const vitePluginGasHoist = () => {
 							exportKinds.set(decl.id.name, kind);
 						}
 					}
+				} else if (node.declaration?.type === 'FunctionDeclaration') {
+					if (node.declaration.id?.type === 'Identifier') {
+						exportKinds.set(node.declaration.id.name, 'function');
+					}
 				}
 			}
 			return null;
