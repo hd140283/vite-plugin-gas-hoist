@@ -278,5 +278,18 @@ describe('vitePluginGasHoist', () => {
 			const { transform } = createReadyPlugin();
 			expect(() => transform('this is not (valid) javascript ===')).not.toThrow();
 		});
+
+		it('clears recorded kinds on buildStart so watch rebuilds are clean', () => {
+			const { plugin, transform } = createReadyPlugin();
+			transform('export const STALE = 1;');
+			plugin.buildStart.call({});
+			const result = plugin.renderChunk.handler.call(
+				{ warn: vi.fn() },
+				'',
+				makeChunk({ exports: ['STALE'] }),
+				iifeOptions,
+			);
+			expect(result).toBeNull();
+		});
 	});
 });
