@@ -9,6 +9,9 @@ on:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vite-version: [6, 7, 8]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,6 +22,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install
+      - run: pnpm add -D vite@${{ matrix.vite-version }}
       - run: pnpm lint:ci
       - run: pnpm test
 
@@ -26,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        vite-version: [5, 6, 7, 8]
+        vite-version: [6, 7, 8]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,4 +44,14 @@ jobs:
           npm run dev
       - name: Verify hoisted output
         working-directory: example
-        run: grep "function sayHello" dist/app.js
+        run: |
+          grep -qF "function functionDecl(...args)" dist/app.js
+          grep -qF "const constValue = lib_.constValue" dist/app.js
+          grep -qF "const constArrow = (...args) => lib_.constArrow" dist/app.js
+          grep -qF "const constFunction = function(...args)" dist/app.js
+          grep -qF "let letValue = lib_.letValue" dist/app.js
+          grep -qF "let letArrow = (...args) => lib_.letArrow" dist/app.js
+          grep -qF "let letFunction = function(...args)" dist/app.js
+          grep -qF "var varValue = lib_.varValue" dist/app.js
+          grep -qF "var varArrow = (...args) => lib_.varArrow" dist/app.js
+          grep -qF "var varFunction = function(...args)" dist/app.js

@@ -18,5 +18,20 @@
 		"formatter": {
 			"enabled": true
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["example/**"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"useArrowFunction": "off"
+					},
+					"style": {
+						"useConst": "off"
+					}
+				}
+			}
+		}
+	]
 }
