@@ -6,7 +6,7 @@
 		"build": "vite build"
 	},
 	"dependencies": {
-		"vite-plugin-gas-hoist": "^0.1.0"
+		"vite-plugin-gas-hoist": "^0.2.0"
 	},
 	"devDependencies": {
 		"vite": "^8.0.3",
