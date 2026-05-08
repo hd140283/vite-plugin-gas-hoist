@@ -1,15 +1,16 @@
 /*
- * Entry point. Re-exports the library's public surface so vite-plugin-gas-hoist
- * hoists each binding with the kind matching the source declaration:
+ * Entry point. Re-exports every declaration kind so vite-plugin-gas-hoist
+ * can hoist all 10 ESM export shapes with their original kind and right-hand
+ * side preserved. See the kind-grouped modules for what each pattern produces
+ * in `dist/app.js`:
  *
- *   - `function` declarations  -> hoisted as `function` (public to GAS callers)
- *   - `const` bindings (value or function expression) -> hoisted as `const` (private to callers)
- *   - `let`   bindings         -> hoisted as `let`     (private, mutable)
- *   - `var`   bindings         -> hoisted as `var`     (public, mutable — callers can override)
+ *   - const.js    -> 3 const patterns    (value, arrow, function expression)
+ *   - let.js      -> 3 let patterns      (value, arrow, function expression)
+ *   - var.js      -> 3 var patterns      (value, arrow, function expression)
+ *   - function.js -> 1 function declaration
  */
 
-export { sayHello } from './say-hello.js';
-export { formatGreeting } from './format-greeting.js';
-export { VERSION } from './version.js';
-export { currentLang } from './current-lang.js';
-export { API_PREFIX } from './api-prefix.js';
+export { constArrow, constFunction, constValue } from './const.js';
+export { functionDecl } from './function.js';
+export { letArrow, letFunction, letValue } from './let.js';
+export { varArrow, varFunction, varValue } from './var.js';
