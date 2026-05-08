@@ -178,13 +178,58 @@ describe('vitePluginGasHoist', () => {
 			expect(result).toContain('function greet(...args){return lib_.greet(...args)}');
 		});
 
+		it('wraps const arrow function as an arrow-style callable', () => {
+			const { transform, render } = createReadyPlugin();
+			transform('export const sayHi = (name) => name;');
+			const result = render('', makeChunk({ exports: ['sayHi'] }));
+
+			expect(result).toContain('const sayHi = (...args) => lib_.sayHi(...args)');
+			expect(result).not.toContain('function sayHi');
+		});
+
+		it('wraps const function expression as a function-style callable', () => {
+			const { transform, render } = createReadyPlugin();
+			transform('export const sayHi = function(name) { return name; };');
+			const result = render('', makeChunk({ exports: ['sayHi'] }));
+
+			expect(result).toContain('const sayHi = function(...args){return lib_.sayHi(...args)}');
+			expect(result).not.toContain('(...args) => lib_.sayHi');
+		});
+
+		it('wraps let arrow function as an arrow-style callable', () => {
+			const { transform, render } = createReadyPlugin();
+			transform('export let sayHi = (name) => name;');
+			const result = render('', makeChunk({ exports: ['sayHi'] }));
+
+			expect(result).toContain('let sayHi = (...args) => lib_.sayHi(...args)');
+		});
+
+		it('leaves var arrow function unwrapped (var is already public)', () => {
+			const { transform, render } = createReadyPlugin();
+			transform('export var sayHi = (name) => name;');
+			const result = render('', makeChunk({ exports: ['sayHi'] }));
+
+			expect(result).toContain('var sayHi = lib_.sayHi');
+			expect(result).not.toContain('(...args) =>');
+		});
+
+		it('preserves arrow-vs-function shape across specifier re-export', () => {
+			const { transform, render } = createReadyPlugin();
+			transform('const helperA = () => 1; const helperB = function() { return 2; }; export { helperA, helperB };');
+			const result = render('', makeChunk({ exports: ['helperA', 'helperB'] }));
+
+			expect(result).toContain('const helperA = (...args) => lib_.helperA(...args)');
+			expect(result).toContain('const helperB = function(...args){return lib_.helperB(...args)}');
+		});
+
 		it('records export { foo } using local declaration kind', () => {
 			const { transform, render } = createReadyPlugin();
-			transform('const helper = () => 1; export { helper };');
+			transform('const helper = 42; export { helper };');
 			const result = render('', makeChunk({ exports: ['helper'] }));
 
 			expect(result).toContain('const helper = lib_.helper');
 			expect(result).not.toContain('function helper');
+			expect(result).not.toContain('(...args) =>');
 		});
 
 		it('records export { foo as bar } under the renamed name', () => {

@@ -20,11 +20,12 @@
  * @returns {import('vite').Plugin}
  */
 /** @typedef {'function' | 'const' | 'let' | 'var'} ExportKind */
+/** @typedef {{ kind: ExportKind, isFn: boolean, isArrow: boolean }} ExportInfo */
 export const vitePluginGasHoist = () => {
 	/** @type {string} IIFE variable name from build.lib.name */
 	let varName;
 
-	/** @type {Map<string, ExportKind>} */
+	/** @type {Map<string, ExportInfo>} */
 	const exportKinds = new Map();
 
 	return {
@@ -59,15 +60,15 @@ export const vitePluginGasHoist = () => {
 				return null;
 			}
 
-			/** @type {Map<string, ExportKind>} */
+			/** @type {Map<string, ExportInfo>} */
 			const localKinds = new Map();
 			for (const node of ast.body) {
 				if (node.type === 'FunctionDeclaration' && node.id) {
-					localKinds.set(node.id.name, 'function');
+					localKinds.set(node.id.name, { kind: 'function', isFn: true, isArrow: false });
 				} else if (node.type === 'VariableDeclaration') {
 					for (const decl of node.declarations) {
 						if (decl.id.type === 'Identifier') {
-							localKinds.set(decl.id.name, node.kind);
+							localKinds.set(decl.id.name, classifyVariable(node.kind, decl.init));
 						}
 					}
 				}
@@ -80,19 +81,19 @@ export const vitePluginGasHoist = () => {
 					const kind = node.declaration.kind;
 					for (const decl of node.declaration.declarations) {
 						if (decl.id.type === 'Identifier') {
-							exportKinds.set(decl.id.name, kind);
+							exportKinds.set(decl.id.name, classifyVariable(kind, decl.init));
 						}
 					}
 				} else if (node.declaration?.type === 'FunctionDeclaration') {
 					if (node.declaration.id?.type === 'Identifier') {
-						exportKinds.set(node.declaration.id.name, 'function');
+						exportKinds.set(node.declaration.id.name, { kind: 'function', isFn: true, isArrow: false });
 					}
 				} else if (node.specifiers.length > 0 && !node.source) {
 					for (const spec of node.specifiers) {
 						if (spec.type !== 'ExportSpecifier') continue;
-						const kind = localKinds.get(spec.local.name);
-						if (kind) {
-							exportKinds.set(spec.exported.name, kind);
+						const info = localKinds.get(spec.local.name);
+						if (info) {
+							exportKinds.set(spec.exported.name, info);
 						}
 					}
 				}
@@ -114,15 +115,15 @@ export const vitePluginGasHoist = () => {
 			handler(code, chunk, options) {
 				if (options.format !== 'iife' || !chunk.isEntry) return null;
 
-				/** @type {Array<{ name: string, kind: ExportKind }>} */
+				/** @type {Array<{ name: string, info: ExportInfo }>} */
 				const known = [];
 				/** @type {string[]} */
 				const skipped = [];
 
 				for (const name of chunk.exports) {
-					const kind = exportKinds.get(name);
-					if (kind) {
-						known.push({ name, kind });
+					const info = exportKinds.get(name);
+					if (info) {
+						known.push({ name, info });
 					} else {
 						skipped.push(name);
 					}
@@ -130,7 +131,7 @@ export const vitePluginGasHoist = () => {
 
 				if (known.length > 0) {
 					const label = known.length === 1 ? 'export' : 'exports';
-					const list = known.map(({ name, kind }) => `  - ${name} (${kind})`).join('\n');
+					const list = known.map(({ name, info }) => `  - ${name} (${info.kind})`).join('\n');
 					console.log(`[vite-plugin-gas-hoist] Hoisted ${known.length} ${label} to global scope:\n${list}`);
 				}
 
@@ -142,17 +143,47 @@ export const vitePluginGasHoist = () => {
 
 				if (known.length === 0) return null;
 
-				const wrappers = known
-					.map(({ name, kind }) => {
-						if (kind === 'function') {
-							return `function ${name}(...args){return ${varName}.${name}(...args)}`;
-						}
-						return `${kind} ${name} = ${varName}.${name}`;
-					})
-					.join('\n');
+				const wrappers = known.map(({ name, info }) => emitWrapper(name, info, varName)).join('\n');
 
 				return `${code}\n${wrappers}\n`;
 			},
 		},
 	};
+};
+
+/**
+ * Classifies a `VariableDeclaration` declarator as a value or function expression.
+ *
+ * @param {ExportKind} kind
+ * @param {import('estree').Expression | null | undefined} init
+ * @returns {ExportInfo}
+ */
+const classifyVariable = (kind, init) => {
+	const isArrow = init?.type === 'ArrowFunctionExpression';
+	const isFn = isArrow || init?.type === 'FunctionExpression';
+	return { kind, isFn, isArrow };
+};
+
+/**
+ * Renders the hoisted binding for a single export, preserving the original
+ * declaration kind and (for `const`/`let` function expressions) the function
+ * shape (arrow vs `function` expression) so callers see a callable wrapper
+ * that GAS recognizes as a function.
+ *
+ * @param {string} name
+ * @param {ExportInfo} info
+ * @param {string} varName
+ * @returns {string}
+ */
+const emitWrapper = (name, info, varName) => {
+	if (info.kind === 'function') {
+		return `function ${name}(...args){return ${varName}.${name}(...args)}`;
+	}
+	if ((info.kind === 'const' || info.kind === 'let') && info.isFn) {
+		if (info.isArrow) {
+			return `${info.kind} ${name} = (...args) => ${varName}.${name}(...args)`;
+		}
+		return `${info.kind} ${name} = function(...args){return ${varName}.${name}(...args)}`;
+	}
+	return `${info.kind} ${name} = ${varName}.${name}`;
 };
