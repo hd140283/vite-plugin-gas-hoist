@@ -179,7 +179,7 @@ const emitWrapper = (name, info, varName) => {
 	if (info.kind === 'function') {
 		return `function ${name}(...args){return ${varName}.${name}(...args)}`;
 	}
-	if ((info.kind === 'const' || info.kind === 'let') && info.isFn) {
+	if (info.isFn) {
 		if (info.isArrow) {
 			return `${info.kind} ${name} = (...args) => ${varName}.${name}(...args)`;
 		}

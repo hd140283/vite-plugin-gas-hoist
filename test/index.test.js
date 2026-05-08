@@ -204,13 +204,20 @@ describe('vitePluginGasHoist', () => {
 			expect(result).toContain('let sayHi = (...args) => lib_.sayHi(...args)');
 		});
 
-		it('leaves var arrow function unwrapped (var is already public)', () => {
+		it('wraps var arrow function as an arrow-style callable', () => {
 			const { transform, render } = createReadyPlugin();
 			transform('export var sayHi = (name) => name;');
 			const result = render('', makeChunk({ exports: ['sayHi'] }));
 
-			expect(result).toContain('var sayHi = lib_.sayHi');
-			expect(result).not.toContain('(...args) =>');
+			expect(result).toContain('var sayHi = (...args) => lib_.sayHi(...args)');
+		});
+
+		it('wraps var function expression as a function-style callable', () => {
+			const { transform, render } = createReadyPlugin();
+			transform('export var sayHi = function(name) { return name; };');
+			const result = render('', makeChunk({ exports: ['sayHi'] }));
+
+			expect(result).toContain('var sayHi = function(...args){return lib_.sayHi(...args)}');
 		});
 
 		it('preserves arrow-vs-function shape across specifier re-export', () => {
