@@ -24,7 +24,9 @@ The catch: that also hides everything you actually want to expose — both funct
 export const sayHello = (name) => `Hello, ${name}!`;
 
 // After build
-var lib_ = (function(){ /* IIFE bundle containing sayHello */ })({});
+var lib_ = (function () {
+	/* IIFE bundle containing sayHello */
+})({});
 const sayHello = (...args) => lib_.sayHello(...args); // added by the plugin
 ```
 
@@ -42,15 +44,15 @@ import { defineConfig } from 'vite';
 import { vitePluginGasHoist } from 'vite-plugin-gas-hoist';
 
 export default defineConfig({
-  plugins: [vitePluginGasHoist()],
-  build: {
-    lib: {
-      entry: 'src/main.js',
-      formats: ['iife'],
-      name: 'lib_',
-      fileName: (_, entryName) => `${entryName}.js`,
-    },
-  },
+	plugins: [vitePluginGasHoist()],
+	build: {
+		lib: {
+			entry: 'src/main.js',
+			formats: ['iife'],
+			name: 'lib_',
+			fileName: (_, entryName) => `${entryName}.js`,
+		},
+	},
 });
 ```
 
@@ -65,14 +67,14 @@ Exposing something globally in GAS serves one of two purposes:
 
 By preserving the original ESM declaration kind (`function` / `const` / `let` / `var`) and the right-hand-side shape, the plugin lets you express both axes naturally. GAS's library visibility rules apply directly: `function` and `var` are externally visible, `const` and `let` are not.
 
-| ESM declaration | Output | GAS library visibility |
-|---|---|---|
-| `export function foo() {}` | `function foo(...args){return lib_.foo(...args)}` | external |
-| `export const FOO = 42` | `const FOO = lib_.FOO` | internal only |
-| `export const foo = (x) => x` | `const foo = (...args) => lib_.foo(...args)` | internal only (appears in the editor's "Run" dropdown) |
-| `export const foo = function(x){...}` | `const foo = function(...args){return lib_.foo(...args)}` | internal only (same) |
-| `export let foo = ...` | `let foo = ...` (right-hand side as above) | internal only |
-| `export var foo = ...` | `var foo = ...` (right-hand side as above) | external |
+| ESM declaration                       | Output                                                    | GAS library visibility                                 |
+| ------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------ |
+| `export function foo() {}`            | `function foo(...args){return lib_.foo(...args)}`         | external                                               |
+| `export const FOO = 42`               | `const FOO = lib_.FOO`                                    | internal only                                          |
+| `export const foo = (x) => x`         | `const foo = (...args) => lib_.foo(...args)`              | internal only (appears in the editor's "Run" dropdown) |
+| `export const foo = function(x){...}` | `const foo = function(...args){return lib_.foo(...args)}` | internal only (same)                                   |
+| `export let foo = ...`                | `let foo = ...` (right-hand side as above)                | internal only                                          |
+| `export var foo = ...`                | `var foo = ...` (right-hand side as above)                | external                                               |
 
 Specifier-form re-exports like `export { foo }` and `export { foo as bar }` inherit the kind of the local declaration. Patterns not covered above (`export default`, `export class`, re-exports whose kind cannot be determined, etc.) are skipped with a build-time warning.
 

@@ -24,7 +24,9 @@ GAS 向けに Vite でバンドルするときは、複数モジュールを 1 �
 export const sayHello = (name) => `Hello, ${name}!`;
 
 // ビルド後
-var lib_ = (function(){ /* バンドルされた sayHello を含む IIFE */ })({});
+var lib_ = (function () {
+	/* バンドルされた sayHello を含む IIFE */
+})({});
 const sayHello = (...args) => lib_.sayHello(...args); // プラグインが追加
 ```
 
@@ -42,15 +44,15 @@ import { defineConfig } from 'vite';
 import { vitePluginGasHoist } from 'vite-plugin-gas-hoist';
 
 export default defineConfig({
-  plugins: [vitePluginGasHoist()],
-  build: {
-    lib: {
-      entry: 'src/main.js',
-      formats: ['iife'],
-      name: 'lib_',
-      fileName: (_, entryName) => `${entryName}.js`,
-    },
-  },
+	plugins: [vitePluginGasHoist()],
+	build: {
+		lib: {
+			entry: 'src/main.js',
+			formats: ['iife'],
+			name: 'lib_',
+			fileName: (_, entryName) => `${entryName}.js`,
+		},
+	},
 });
 ```
 
@@ -65,14 +67,14 @@ GAS でグローバルに公開するときの目的は、大きく 2 つに分�
 
 ESM の宣言種別（`function` / `const` / `let` / `var`）と右辺の形をそのまま保つことで、この 2 つの公開を組み合わせて表現できます。GAS のライブラリ可視性ルール（`function` / `var` は外部公開、`const` / `let` は非公開）がそのまま反映される挙動です。
 
-| ESM 宣言 | 出力 | GAS ライブラリ可視性 |
-|---|---|---|
-| `export function foo() {}` | `function foo(...args){return lib_.foo(...args)}` | 公開 |
-| `export const FOO = 42` | `const FOO = lib_.FOO` | 非公開 |
-| `export const foo = (x) => x` | `const foo = (...args) => lib_.foo(...args)` | 非公開（エディタの "実行" ドロップダウンに表示） |
-| `export const foo = function(x){...}` | `const foo = function(...args){return lib_.foo(...args)}` | 非公開（同上） |
-| `export let foo = ...` | `let foo = ...`（右辺は const と同形） | 非公開 |
-| `export var foo = ...` | `var foo = ...`（右辺は const と同形） | 公開 |
+| ESM 宣言                              | 出力                                                      | GAS ライブラリ可視性                             |
+| ------------------------------------- | --------------------------------------------------------- | ------------------------------------------------ |
+| `export function foo() {}`            | `function foo(...args){return lib_.foo(...args)}`         | 公開                                             |
+| `export const FOO = 42`               | `const FOO = lib_.FOO`                                    | 非公開                                           |
+| `export const foo = (x) => x`         | `const foo = (...args) => lib_.foo(...args)`              | 非公開（エディタの "実行" ドロップダウンに表示） |
+| `export const foo = function(x){...}` | `const foo = function(...args){return lib_.foo(...args)}` | 非公開（同上）                                   |
+| `export let foo = ...`                | `let foo = ...`（右辺は const と同形）                    | 非公開                                           |
+| `export var foo = ...`                | `var foo = ...`（右辺は const と同形）                    | 公開                                             |
 
 `export { foo }` や `export { foo as bar }` のような specifier 形式の再エクスポートも、ローカル宣言の種別を引き継ぎます。表に当てはまらないパターン（`export default` や `export class`、宣言種別を判定できない再エクスポートなど）はビルド時に警告を出してスキップします。
 
