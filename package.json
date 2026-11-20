@@ -23,6 +23,9 @@
 	"files": [
 		"src"
 	],
+	"engines": {
+		"node": ">=22"
+	},
 	"devEngines": {
 		"runtime": {
 			"name": "node",
