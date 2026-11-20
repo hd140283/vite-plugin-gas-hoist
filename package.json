@@ -23,6 +23,18 @@
 	"files": [
 		"src"
 	],
+	"devEngines": {
+		"runtime": {
+			"name": "node",
+			"version": "^22 || ^24 || >=26",
+			"onFail": "error"
+		},
+		"packageManager": {
+			"name": "pnpm",
+			"version": "12",
+			"onFail": "error"
+		}
+	},
 	"scripts": {
 		"test": "vitest run",
 		"lint": "biome check --write",
@@ -51,10 +63,6 @@
 		"acorn": "^8.16.0",
 		"vite": "^8.0.3",
 		"vitest": "^4.1.4"
-	},
-	"volta": {
-		"node": "22.21.1",
-		"pnpm": "10.23.0"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
