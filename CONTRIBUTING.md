@@ -11,17 +11,26 @@
 
 ## Coding Conventions
 
-### Formatting
+Code style is enforced by [Biome](https://biomejs.dev/). Run `pnpm run lint` before committing.
 
-Code style is enforced by [Biome](https://biomejs.dev/). Run before committing:
+Entry points and tool configuration files follow the format each tool requires. The conventions below apply to all other code.
 
-```bash
-pnpm run lint
-```
-
-### JavaScript
-
-- One export per file; filename and export name should match
+- One export per file; name the file after its export
 - Use arrow functions instead of classes
 - Use async/await for asynchronous code
-- Use JSDoc for type definitions
+- Use kebab-case for file names
+- Use camelCase for function and variable names
+
+## Testing
+
+- Use [Vitest](https://vitest.dev) for unit tests
+- Run tests with `pnpm run test`
+- Name test files `*.test.js` and place them in the `test/` directory
+
+## Documentation
+
+- Use [JSDoc](https://jsdoc.app) for API documentation, generated into `docs/` with `pnpm run docs`
+- Write types and descriptions in JSDoc, and make sure generation produces no warnings
+- Write types in JSDoc type syntax, not TypeScript syntax: `{*}` for any type, `{Object.<string, function>}` for key-value maps, `{function(T): R}` for function types
+- Add `@function` to arrow functions assigned to `const` / `export const`; without it, the parameter and return tables are not generated. The name can be omitted, since it is inferred from the variable name
+- Add `@private` to file-local functions that are not exported, so they are excluded from the docs and not mistaken for public API
