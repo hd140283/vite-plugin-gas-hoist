@@ -16,12 +16,13 @@
 		"url": "git+https://github.com/hd140283/vite-plugin-gas-hoist.git"
 	},
 	"type": "module",
-	"main": "./src/index.js",
+	"main": "./index.js",
 	"exports": {
-		".": "./src/index.js"
+		".": "./index.js"
 	},
 	"files": [
-		"src"
+		"index.js",
+		"lib"
 	],
 	"engines": {
 		"node": ">=22"
