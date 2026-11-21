@@ -4,6 +4,10 @@
 
 - コミットメッセージは [Conventional Commits](https://www.conventionalcommits.org) に従う
 - コミットは変更の目的ごとに細かく分ける
+- ブランチは main の1本で運用する
+- 外部からの変更は main 宛ての PR で受け付ける
+- リリースは `pnpm version <patch|minor|major> -m "chore: release v%s"` で行い、タグも push する。タグを push すると npm にステージされるので、npm 上で承認して公開する
+- バージョン番号は [Semantic Versioning](https://semver.org) に従う
 
 ## コーディング規約
 
