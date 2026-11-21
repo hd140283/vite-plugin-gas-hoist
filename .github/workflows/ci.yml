@@ -10,22 +10,39 @@ permissions:
   contents: read
 
 jobs:
-  lint-and-test:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [22, 24, 26]
+    runs-on: ${{ matrix.os }}
+    env:
+      MISE_NODE_VERSION: ${{ matrix.node }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec biome ci
+      - run: pnpm test
+
+  test-vite:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        vite-version: [6, 7, 8]
+        vite-version: [6, 7]
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5
       - run: pnpm install --frozen-lockfile
       - run: pnpm add -D vite@${{ matrix.vite-version }}
-      - run: pnpm exec biome ci
       - run: pnpm test
 
   integration:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         vite-version: [6, 7, 8]
     steps:
