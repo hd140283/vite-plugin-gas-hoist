@@ -13,15 +13,9 @@ jobs:
       matrix:
         vite-version: [6, 7, 8]
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - run: pnpm install --frozen-lockfile
       - run: pnpm add -D vite@${{ matrix.vite-version }}
       - run: pnpm lint:ci
       - run: pnpm test
@@ -32,10 +26,8 @@ jobs:
       matrix:
         vite-version: [6, 7, 8]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
       - name: Build example with Vite ${{ matrix.vite-version }}
         working-directory: example
         run: |
