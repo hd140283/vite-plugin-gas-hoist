@@ -1,4 +1,4 @@
-import { collectExportKinds } from './lib/collect-export-kinds.js';
+import { collectModuleExports } from './lib/collect-module-exports.js';
 import { hoistExports } from './lib/hoist-exports.js';
 
 /**
@@ -23,22 +23,22 @@ import { hoistExports } from './lib/hoist-exports.js';
  * @returns {import('vite').Plugin}
  */
 export const vitePluginGasHoist = () => {
-	/** @type {Map<string, ExportInfo>} */
-	const exportKinds = new Map();
+	/** @type {Map<string, ModuleRecord>} */
+	const modules = new Map();
 
 	return {
 		name: 'vite-plugin-gas-hoist',
 		apply: 'build',
 
 		buildStart() {
-			exportKinds.clear();
+			modules.clear();
 		},
 
 		/** @param {import('rollup').ModuleInfo} moduleInfo */
-		moduleParsed({ code }) {
-			for (const [name, info] of collectExportKinds(this.parse(code))) {
-				exportKinds.set(name, info);
-			}
+		async moduleParsed({ id, code }) {
+			const moduleExports = collectModuleExports(this.parse(code));
+			const resolutions = await Promise.all(moduleExports.sources.map((source) => this.resolve(source, id)));
+			modules.set(id, { ...moduleExports, resolutions });
 		},
 
 		renderChunk: {
@@ -49,7 +49,7 @@ export const vitePluginGasHoist = () => {
 			 * @param {import('rollup').NormalizedOutputOptions} options
 			 */
 			handler(code, chunk, options) {
-				const { output, logs } = hoistExports(code, chunk, options, exportKinds);
+				const { output, logs } = hoistExports(code, chunk, options, modules);
 				for (const { level, message } of logs) {
 					this[level](message);
 				}
