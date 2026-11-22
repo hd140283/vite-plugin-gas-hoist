@@ -5,7 +5,7 @@
 
 [日本語](README.ja.md)
 
-A Vite plugin that hoists entry point `export`s to the global scope for Google Apps Script (GAS), preserving the original ESM declaration kind (`function` / `const` / `let` / `var`).
+A Vite plugin that hoists entry point `export`s to the global scope for Google Apps Script (GAS), preserving the original ESM declaration kind (`function` / `const` / `let` / `var`). It also works with Rollup and Rolldown.
 
 ## Try it
 
@@ -58,6 +58,25 @@ export default defineConfig({
 
 Exports are hoisted to the global scope via the variable name specified in `build.lib.name` (e.g. `lib_`).
 
+### Rollup / Rolldown
+
+```js
+// rollup.config.js or rolldown.config.js
+import { vitePluginGasHoist } from 'vite-plugin-gas-hoist';
+
+export default {
+	input: 'src/main.js',
+	plugins: [vitePluginGasHoist()],
+	output: {
+		file: 'dist/main.js',
+		format: 'iife',
+		name: 'lib_',
+	},
+};
+```
+
+The variable name comes from `output.name`.
+
 ## What gets hoisted
 
 Exposing something globally in GAS serves one of two purposes:
@@ -82,7 +101,8 @@ Specifier-form re-exports like `export { foo }` and `export { foo as bar }` inhe
 
 ## Requirements
 
-- `build.lib.formats` must include `'iife'`
+- Vite 6, 7, or 8, Rollup 4, or Rolldown 1
+- `build.lib.formats` must include `'iife'` (`output.format` must be `'iife'` for Rollup / Rolldown)
 - Entry point must have at least one `export`
 
 ## Migration from 0.1.x

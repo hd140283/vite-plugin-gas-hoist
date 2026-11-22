@@ -5,7 +5,7 @@
 
 [English](README.md)
 
-エントリーポイントの `export` を、ESM の宣言種別（`function` / `const` / `let` / `var`）を保ったまま、Google Apps Script (GAS) のグローバルスコープに公開する Vite プラグインです。
+エントリーポイントの `export` を、ESM の宣言種別（`function` / `const` / `let` / `var`）を保ったまま、Google Apps Script (GAS) のグローバルスコープに公開する Vite プラグインです。Rollup と Rolldown でも使えます。
 
 ## デモ
 
@@ -58,6 +58,25 @@ export default defineConfig({
 
 `build.lib.name` に指定した変数名（上記例では `lib_`）を介して、エクスポートが GAS のグローバルスコープに公開されます。
 
+### Rollup / Rolldown
+
+```js
+// rollup.config.js または rolldown.config.js
+import { vitePluginGasHoist } from 'vite-plugin-gas-hoist';
+
+export default {
+	input: 'src/main.js',
+	plugins: [vitePluginGasHoist()],
+	output: {
+		file: 'dist/main.js',
+		format: 'iife',
+		name: 'lib_',
+	},
+};
+```
+
+変数名は `output.name` の指定が使われます。
+
 ## 対応パターン
 
 GAS でグローバルに公開するときの目的は、大きく 2 つに分かれます。
@@ -82,7 +101,8 @@ ESM の宣言種別（`function` / `const` / `let` / `var`）と右辺の形を�
 
 ## 動作条件
 
-- `build.lib.formats` に `'iife'` を含むこと
+- Vite 6・7・8、Rollup 4、Rolldown 1 のいずれか
+- `build.lib.formats` に `'iife'` を含むこと（Rollup / Rolldown では `output.format` が `'iife'` であること）
 - エントリーポイントで何かを `export` していること
 
 ## 0.1.x からの移行
