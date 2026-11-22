@@ -2,6 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/vite-plugin-gas-hoist)](https://www.npmjs.com/package/vite-plugin-gas-hoist)
 [![Vite compatibility](https://registry.vite.dev/api/badges?package=vite-plugin-gas-hoist&tool=vite)](https://registry.vite.dev)
+[![Rollup compatibility](https://registry.vite.dev/api/badges?package=vite-plugin-gas-hoist&tool=rollup)](https://registry.vite.dev)
+[![Rolldown compatibility](https://registry.vite.dev/api/badges?package=vite-plugin-gas-hoist&tool=rolldown)](https://registry.vite.dev)
 
 [English](README.md)
 
