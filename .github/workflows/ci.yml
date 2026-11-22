@@ -67,3 +67,47 @@ jobs:
           grep -qF "var varValue = lib_.varValue" dist/app.js
           grep -qF "var varArrow = (...args) => lib_.varArrow" dist/app.js
           grep -qF "var varFunction = function(...args)" dist/app.js
+
+  integration-bundler:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        bundler: [rollup, rolldown]
+        include:
+          - bundler: rollup
+            version: 4
+          - bundler: rolldown
+            version: 1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - name: Build example with ${{ matrix.bundler }} ${{ matrix.version }}
+        run: |
+          mkdir bundler
+          cd bundler
+          echo '{ "private": true, "type": "module" }' > package.json
+          npm install file:.. ${{ matrix.bundler }}@${{ matrix.version }}
+          cat > config.js <<'CONFIG'
+          import { vitePluginGasHoist } from 'vite-plugin-gas-hoist';
+
+          export default {
+            input: '../example/src/app.js',
+            plugins: [vitePluginGasHoist()],
+            output: { file: 'dist/app.js', format: 'iife', name: 'lib_' },
+          };
+          CONFIG
+          npx ${{ matrix.bundler }} -c config.js
+      - name: Verify hoisted output
+        working-directory: bundler
+        run: |
+          grep -qF "function functionDecl(...args)" dist/app.js
+          grep -qF "const constValue = lib_.constValue" dist/app.js
+          grep -qF "const constArrow = (...args) => lib_.constArrow" dist/app.js
+          grep -qF "const constFunction = function(...args)" dist/app.js
+          grep -qF "let letValue = lib_.letValue" dist/app.js
+          grep -qF "let letArrow = (...args) => lib_.letArrow" dist/app.js
+          grep -qF "let letFunction = function(...args)" dist/app.js
+          grep -qF "var varValue = lib_.varValue" dist/app.js
+          grep -qF "var varArrow = (...args) => lib_.varArrow" dist/app.js
+          grep -qF "var varFunction = function(...args)" dist/app.js
